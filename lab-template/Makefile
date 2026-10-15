@@ -4,7 +4,8 @@ up:
 	docker compose up -d --wait
 
 verify:
-	sh ./scripts/verify.sh
+	@echo "Intentional CI proof failure: verify must fail before teardown"
+	@exit 42
 
 down:
 	sh ./scripts/down.sh
