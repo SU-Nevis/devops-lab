@@ -1,0 +1,8 @@
+flowchart LR
+    User[User] --> App[Lab service]
+    Push[Push or pull request] --> Runner[GitHub-hosted runner]
+    Runner --> Up[make up]
+    Up --> Verify[make verify]
+    Verify --> Down[make down]
+    Verify -. failure .-> Down
+    Down --> Clean[No labeled Docker resources remain]

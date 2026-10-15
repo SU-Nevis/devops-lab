@@ -1,0 +1,7 @@
+name: devops-lab-template
+
+services:
+  app:
+    image: busybox:1.36
+    command: ["sh", "-c", "printf 'replace me\\n'; sleep infinity"]
+    restart: "no"

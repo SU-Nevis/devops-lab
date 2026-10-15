@@ -1,0 +1,6 @@
+# Speaking notes
+
+- I built this lab to practise ...
+- The request flows from ... to ...
+- I verified it by ..., and I remove every resource with `make down`.
+- CI proves the lab starts and passes its observable checks on a clean runner, then proves teardown leaves no labeled Docker resources even when verification fails.

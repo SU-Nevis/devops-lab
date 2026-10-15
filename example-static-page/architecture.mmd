@@ -1,0 +1,3 @@
+flowchart LR
+    User[Browser or curl] -->|HTTP :8080| Web[nginx container]
+    Files[Read-only ./site mount] --> Web

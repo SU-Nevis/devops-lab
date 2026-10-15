@@ -1,0 +1,48 @@
+name: Verify labs
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify ${{ matrix.lab }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        lab:
+          - example-static-page
+          - lab-template
+    defaults:
+      run:
+        working-directory: ${{ matrix.lab }}
+    steps:
+      # actions/checkout v4.2.2; the immutable SHA prevents tag retargeting.
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Prepare local environment
+        run: |
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          fi
+
+      - name: Show Docker versions
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Start lab
+        run: make up
+
+      - name: Verify lab
+        run: make verify
+
+      - name: Tear down lab and prove resources are absent
+        if: always()
+        run: make down
