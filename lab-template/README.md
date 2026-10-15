@@ -6,12 +6,7 @@ State the skill you are practising and the observable result.
 
 ## Architecture
 
-The editable diagram source is in [`architecture.mmd`](architecture.mmd).
-
-```mermaid
-flowchart LR
-    User[User] --> App[Lab service]
-```
+The single editable diagram source is [`architecture.mmd`](architecture.mmd). It includes both the local request path and the CI lifecycle so the documentation cannot drift between duplicate diagrams.
 
 ## Prerequisites
 

@@ -6,6 +6,7 @@ Small, reproducible labs for learning and demonstrating practical DevOps workflo
 
 - [`lab-template/`](lab-template/) — the reusable Docker Compose lab template.
 - [`example-static-page/`](example-static-page/) — a complete static-page example built from the template.
+- [`terraform-docker-lab/`](terraform-docker-lab/) — Terraform declares an nginx container, verifies its response, and proves destroy leaves nothing behind.
 
 ## Run a lab
 
@@ -17,6 +18,6 @@ make verify
 make down
 ```
 
-The root GitHub Actions workflow runs this sequence for both labs on every push and pull request. Teardown runs even when verification fails, and it rejects leftover Compose-labeled containers, networks, or volumes.
+The root GitHub Actions workflow runs this sequence for every lab on pushes and pull requests. Teardown runs even when verification fails, and each lab rejects its own leftover Docker resources.
 
 See [`skill-map.md`](skill-map.md) for the learning path and [`VERIFIED.md`](VERIFIED.md) for local validation evidence.

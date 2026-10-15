@@ -1,0 +1,8 @@
+flowchart LR
+    Make[make up] --> Apply[terraform apply]
+    Apply --> Provider[Docker provider]
+    Provider --> Container[nginx container]
+    User[HTTP client] --> Container
+    CI[GitHub Actions matrix] --> Make
+    CI --> Verify[make verify]
+    CI --> Destroy[make down / terraform destroy]
