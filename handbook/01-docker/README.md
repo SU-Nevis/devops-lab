@@ -196,7 +196,19 @@ Real output:
 handbook-data still exists
 ```
 
-Now repeat the one-line `docker run` command from task 1, then read the volume marker:
+Recreate the container:
+
+```sh
+docker run -d --name handbook-web -p 127.0.0.1:8088:80 --label devops.handbook=01-docker --network handbook-net --mount type=bind,src=/tmp/handbook-bind,dst=/usr/share/nginx/html,readonly --mount type=volume,src=handbook-data,dst=/var/cache/nginx --health-cmd='wget -q -O - http://127.0.0.1/ >/dev/null 2>&1 || exit 1' --health-interval=2s --health-timeout=2s --health-retries=3 --health-start-period=8s nginx:1.27.5-alpine
+```
+
+Real output:
+
+```text
+8d0fa5e26e96fe0cc562b1da0fbd4101e831faa9fcaf115289eaf554ee6dcf8f
+```
+
+Then read the volume marker:
 
 ```sh
 docker exec handbook-web cat /var/cache/nginx/handbook-marker
@@ -275,7 +287,11 @@ handbook-web
 handbook-web
 ```
 
-Repeat the one-line `docker run` command from task 1 before task 10.
+Recreate the container before task 10:
+
+```sh
+docker run -d --name handbook-web -p 127.0.0.1:8088:80 --label devops.handbook=01-docker --network handbook-net --mount type=bind,src=/tmp/handbook-bind,dst=/usr/share/nginx/html,readonly --mount type=volume,src=handbook-data,dst=/var/cache/nginx --health-cmd='wget -q -O - http://127.0.0.1/ >/dev/null 2>&1 || exit 1' --health-interval=2s --health-timeout=2s --health-retries=3 --health-start-period=8s nginx:1.27.5-alpine
+```
 
 Why: containers are disposable runtime objects, while the unchanged image layers, network, and volume remain independently listed and reusable.
 
