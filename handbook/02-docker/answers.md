@@ -14,7 +14,7 @@ Repair it:
 docker network connect handbook-net handbook-web
 ```
 
-Grade from `handbook/01-docker`:
+Grade from `handbook/02-docker`:
 
 ```sh
 sh ./check.sh

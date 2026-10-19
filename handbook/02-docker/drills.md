@@ -1,6 +1,6 @@
 # Docker break/fix drill
 
-Working directory: `handbook/01-docker`.
+Working directory: `handbook/02-docker`.
 
 1. Confirm `sh ./check.sh` passes.
 2. Run `sh ./break.sh`. It plants exactly one fault and prints no cause.

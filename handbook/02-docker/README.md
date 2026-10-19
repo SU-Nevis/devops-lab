@@ -1,4 +1,4 @@
-# Step 1 — Docker from the driver’s seat
+# Step 2 — Docker from the driver’s seat
 
 Do this on Linux or WSL2 after `00-setup`. Every command below was run on the course machine. Container IDs and elapsed times will differ on your machine.
 
@@ -299,7 +299,7 @@ Why: containers are disposable runtime objects, while the unchanged image layers
 
 Time: 3 minutes. Interview question: **How do health checks, bind mounts, volumes, and container networks work?**
 
-Working directory: `handbook/01-docker`.
+Working directory: `handbook/02-docker`.
 
 ```sh
 sh ./check.sh
