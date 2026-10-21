@@ -1,66 +1,62 @@
-# Step 1 — Linux and shell from the driver’s seat
+# Step 1 — inspect and control Linux
 
-Do this on Linux or WSL2 after `00-setup`. Every output shown below was captured on the course machine; PIDs, usernames, timestamps, and process lists will differ on yours.
+## What you will build
 
-## 1. List processes and read the useful columns
+You will build a small workspace in `~/devops-lab/01-shell/` containing a protected file, separated output streams, and a strict Bash script. A read-only grader proves the artifacts behave as intended.
 
-Time: 3 minutes. Interview question: **How would you find the process listening on a port?**
+## Why this matters
 
-Working directory: repository root.
+Shell commands connect build, deployment, diagnosis, and teardown work. Here you learn to see processes and ports, control permissions and signals, and make failures visible before you automate them.
 
-```sh
-ps
-```
+## Before you start
 
-Real output:
+Finish step 0 first. Use Linux or WSL2 with Ubuntu and allow about 30 minutes. PIDs, usernames, and timestamps differ on every machine.
 
-```text
-    PID TTY          TIME CMD
-      1 ?        00:00:00 codex
-      2 ?        00:00:00 bash
-      9 ?        00:00:00 ps
-```
+## What you will be able to answer
 
-Working directory: repository root.
+- **How do permissions and ownership work?**
+- **How would you find the process listening on a port?**
+- **What are stdout, stderr, pipes, signals, and shell exit codes?**
+- **Why use `set -eu`?**
 
-```sh
-ps -ef | head -n 1
-```
+## 1. Read a process table
 
-Real output:
-
-```text
-UID          PID    PPID  C STIME TTY          TIME CMD
-```
-
-Working directory: repository root.
+Time: 3 minutes. **Foundation for:** How would you find the process listening on a port?
 
 ```sh
-ps -eo pid,ppid,user,stat,%cpu,%mem,etime,comm --sort=-%cpu | head
+ps -eo pid,ppid,user,stat,%cpu,%mem,etime,comm | grep -E 'PID|bash|dockerd|systemd' | head
 ```
 
-Real output:
+Real output from an Ubuntu terminal:
 
 ```text
     PID    PPID USER     STAT %CPU %MEM     ELAPSED COMMAND
-      1       0 user     Ss    0.0  0.1       00:00 codex
-      2       1 user     S     0.0  0.0       00:00 bash
-     12       2 user     R     0.0  0.0       00:00 ps
+      1       0 root     Ss    0.0  0.0    01:52:51 systemd
+      2       1 root     Sl+   0.0  0.0    01:52:51 init-systemd(Ub
+     46       1 root     S<s   0.0  0.1    01:52:51 systemd-journal
+     80       1 systemd+ Ss    0.0  0.0    01:52:50 systemd-resolve
+     84       1 root     Ss    0.0  0.0    01:52:50 systemd-udevd
+    218       1 root     Ss    0.0  0.0    01:52:49 systemd-logind
+    383       1 root     Ssl   0.0  0.5    01:52:49 dockerd
+    674     666 user     Ss    0.0  0.0    01:52:48 bash
+    739       1 user     Ss    0.0  0.0    01:52:48 systemd
 ```
 
-Why: PID identifies the process, PPID its parent, USER its owner, STAT its state, CPU and memory its current cost, ELAPSED its age, and COMMAND what is running.
+**Why:** PID identifies a process, PPID its parent, USER its owner, STAT its state, and the remaining columns show cost, age, and command.
 
-## 2. Find a port owner and terminate it by PID
+**If it fails:** If `ps` is missing, run `sudo apt-get update && sudo apt-get install -y procps`.
 
-Time: 4 minutes. Interview question: **How would you find the process listening on a port?**
+## 2. Find a port owner and stop it
 
-Working directory: repository root.
+Time: 4 minutes. **Interview question:** How would you find the process listening on a port?
 
 ```sh
-python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/handbook-port.log 2>&1 & echo $! >/tmp/handbook-port.pid
+mkdir -p ~/devops-lab/01-shell && cd ~/devops-lab/01-shell
 ```
 
-Working directory: repository root.
+```sh
+python3 -m http.server 8765 --bind 127.0.0.1 >port.log 2>&1 & echo $! >port.pid
+```
 
 ```sh
 ss -ltnp | grep ':8765'
@@ -69,109 +65,62 @@ ss -ltnp | grep ':8765'
 Real output:
 
 ```text
-LISTEN 0      5           127.0.0.1:8765       0.0.0.0:*    users:(("python3",pid=6775,fd=3))
+LISTEN 0      5           127.0.0.1:8765       0.0.0.0:*    users:(("python3",pid=25142,fd=3))
 ```
 
-Working directory: repository root.
-
 ```sh
-kill "$(cat /tmp/handbook-port.pid)"
+kill "$(cat port.pid)"
 ```
 
-Why: `ss` connects the listening socket to its process and PID; `kill PID` sends TERM to that exact process.
+**Why:** `ss` connects a listening socket to its process. `kill PID` sends TERM to that exact process.
 
-## 3. Set and inspect permissions and ownership
+**If it fails:** If the port is busy, run `ss -ltnp | grep ':8765'`, stop the listed PID with `kill PID`, and start the server again.
 
-Time: 4 minutes. Interview question: **How do permissions and ownership work?**
+## 3. Set permissions and ownership
 
-Working directory: repository root.
+Time: 4 minutes. **Interview question:** How do permissions and ownership work?
+
+Stay in `~/devops-lab/01-shell`.
 
 ```sh
-mkdir -p /tmp/handbook-shell && printf '%s\n' 'owned by me' > /tmp/handbook-shell/owned.txt
+printf '%s\n' 'owned by me' > owned.txt && chmod 640 owned.txt && chown "$(id -un):$(id -gn)" owned.txt
 ```
 
-Working directory: repository root.
-
 ```sh
-ls -l /tmp/handbook-shell/owned.txt
+stat -c '%a %U %G %n' owned.txt
 ```
 
 Real output:
 
 ```text
--rw-r--r-- 1 user user 12 Oct 19 19:19 /tmp/handbook-shell/owned.txt
+640 user user owned.txt
 ```
 
-Working directory: repository root.
+**Why:** Mode `640` gives the owner read/write, the group read, and everyone else no access. Ownership determines which permission class applies.
+
+**If it fails:** If `chown` reports an invalid group, run `id -un; id -gn`, then repeat the command exactly as shown.
+
+## 4. Observe exit codes and separate streams
+
+Time: 5 minutes. **Interview question:** What are stdout, stderr, pipes, signals, and shell exit codes?
 
 ```sh
-chmod 640 /tmp/handbook-shell/owned.txt
-```
-
-Working directory: repository root.
-
-```sh
-chown "$(id -un):$(id -gn)" /tmp/handbook-shell/owned.txt
-```
-
-Working directory: repository root.
-
-```sh
-stat -c '%a %U %G %n' /tmp/handbook-shell/owned.txt
-```
-
-Real output:
-
-```text
-640 user user /tmp/handbook-shell/owned.txt
-```
-
-Why: the numeric mode gives the owner read/write, the group read, and everyone else no access; ownership determines which class applies.
-
-## 4. Observe success and failure exit codes
-
-Time: 2 minutes. Interview question: **What are stdout, stderr, pipes, signals, and shell exit codes?**
-
-Working directory: repository root.
-
-```sh
-true; printf 'exit=%s\n' "$?"
+true; printf 'exit=%s\n' "$?"; false; printf 'exit=%s\n' "$?"
 ```
 
 Real output:
 
 ```text
 exit=0
-```
-
-Working directory: repository root.
-
-```sh
-false; printf 'exit=%s\n' "$?"
-```
-
-Real output:
-
-```text
 exit=1
 ```
 
-Why: zero reports success; a non-zero status reports failure and lets callers make decisions.
-
-## 5. Separate stdout from stderr
-
-Time: 3 minutes. Interview question: **What are stdout, stderr, pipes, signals, and shell exit codes?**
-
-Working directory: repository root.
-
 ```sh
-sh -c 'printf "%s\n" "out: visible"; printf "%s\n" "err: visible" >&2' >/tmp/handbook-shell/stdout.txt 2>/tmp/handbook-shell/stderr.txt
+sh -c 'printf "%s\n" "out: visible"; printf "%s\n" "err: visible" >&2' >stdout.txt 2>stderr.txt
 ```
 
-Working directory: repository root.
-
 ```sh
-printf 'stdout=<%s> stderr=<%s>\n' "$(cat /tmp/handbook-shell/stdout.txt)" "$(cat /tmp/handbook-shell/stderr.txt)"
+printf 'stdout=<%s> stderr=<%s>\n' "$(cat stdout.txt)" "$(cat stderr.txt)"
 ```
 
 Real output:
@@ -180,13 +129,13 @@ Real output:
 stdout=<out: visible> stderr=<err: visible>
 ```
 
-Why: file descriptor 1 and file descriptor 2 are independent streams, so automation can keep data separate from diagnostics.
+**Why:** Zero means success and non-zero means failure. File descriptors 1 and 2 keep program data separate from diagnostics.
 
-## 6. Chain pipes and filters on real process output
+**If it fails:** If both messages land in one file, remove `stdout.txt` and `stderr.txt`, then repeat the redirections in the shown order.
 
-Time: 3 minutes. Interview question: **What are stdout, stderr, pipes, signals, and shell exit codes?**
+## 5. Use pipes and signals
 
-Working directory: repository root.
+Time: 4 minutes. **Interview question:** What are stdout, stderr, pipes, signals, and shell exit codes?
 
 ```sh
 ps -eo user= | grep -v '^$' | sort | uniq -c | sort -nr | head
@@ -195,28 +144,14 @@ ps -eo user= | grep -v '^$' | sort | uniq -c | sort -nr | head
 Real output:
 
 ```text
-      8 user
+     39 user
+     21 root
+      2 _chrony
+      1 systemd-resolve
+      1 syslog
+      1 ollama
+      1 messagebus
 ```
-
-Working directory: repository root.
-
-```sh
-ps -eo comm= | grep -E 'sh|python' | sort | head | wc -l
-```
-
-Real output:
-
-```text
-5
-```
-
-Why: each program transforms the previous program’s real output; `grep` selects, `sort` orders, `head` limits, and `wc -l` counts.
-
-## 7. Send TERM to a background process and prove it is gone
-
-Time: 3 minutes. Interview question: **What are stdout, stderr, pipes, signals, and shell exit codes?**
-
-Working directory: repository root.
 
 ```sh
 sleep 300 & signal_pid=$!; kill -TERM "$signal_pid"; wait "$signal_pid" 2>/dev/null || true; ps -p "$signal_pid" >/dev/null 2>&1; printf 'ps exit=%s (non-zero means gone)\n' "$?"
@@ -228,53 +163,62 @@ Real output:
 ps exit=1 (non-zero means gone)
 ```
 
-Why: TERM asks a process to shut down; waiting reaps it, and the final lookup proves the PID is no longer present.
+**Why:** Each pipeline command transforms real process data. TERM asks a process to stop; the final lookup proves it is gone.
 
-## 8. Write a strict-mode script with a rejected branch
+**If it fails:** If `ps exit=0`, run `kill -TERM "$signal_pid"` once more and repeat `ps -p "$signal_pid"`.
 
-Time: 5 minutes. Interview question: **Why use `set -eu`?**
+## 6. Write a strict-mode script
 
-Working directory: repository root.
+Time: 5 minutes. **Interview question:** Why use `set -eu`?
 
 ```sh
-printf '%s\n' '#!/usr/bin/env bash' 'set -euo pipefail' 'case "${1:-}" in' '  deploy) printf "%s\n" "deploy allowed" ;;' '  *) printf "%s\n" "branch rejected" >&2; exit 64 ;;' 'esac' > /tmp/handbook-shell/strict.sh
+printf '%s\n' '#!/usr/bin/env bash' 'set -euo pipefail' 'case "${1:-}" in' '  deploy) printf "%s\n" "deploy allowed" ;;' '  *) printf "%s\n" "branch rejected" >&2; exit 64 ;;' 'esac' > strict.sh
 ```
 
-Working directory: repository root.
-
 ```sh
-bash /tmp/handbook-shell/strict.sh deploy
+bash strict.sh deploy; bash strict.sh reject; printf 'exit=%s\n' "$?"
 ```
 
 Real output:
 
 ```text
 deploy allowed
-```
-
-Working directory: repository root.
-
-```sh
-bash /tmp/handbook-shell/strict.sh reject; printf 'exit=%s\n' "$?"
-```
-
-Real output:
-
-```text
 branch rejected
 exit=64
 ```
 
-Why: `-e` stops on unhandled command failure, `-u` rejects unset variables, `pipefail` exposes failure anywhere in a pipeline, and the named reject branch deliberately returns non-zero.
+**Why:** `-e` stops on unhandled failure, `-u` rejects unset variables, and `pipefail` exposes a failed pipeline stage.
 
-## 9. Grade only what you made
+**If it fails:** If Bash reports a syntax error, run `bash -n strict.sh`, compare the reported line with the command above, and recreate the file.
 
-Time: 1 minute. Interview question: **How do permissions and ownership work?**
+## Grade your work
 
-Working directory: `handbook/01-shell`.
+From `handbook/01-shell`, run:
 
 ```sh
-sh ./check.sh
+./check.sh
 ```
 
-Why: the grader inspects the mode and owner, strict-mode script behavior, and separated stream files without creating or repairing learner artifacts.
+A full PASS proves the file mode and owner, strict-script behavior, separated streams, and notes. The grader changes nothing.
+
+## Write your notes
+
+Write three lines: what the PASS proves, the one command you will not forget, and the one thing that broke.
+
+```sh
+printf '%s\n' 'PASS proves: ...' 'Command: ...' 'Broke: ...' > ~/devops-lab/01-shell/notes.md
+```
+
+Run `./check.sh` again.
+
+## Clean up
+
+Stop the temporary server if it is still running, then remove every artifact from this step:
+
+```sh
+test ! -f ~/devops-lab/01-shell/port.pid || kill "$(cat ~/devops-lab/01-shell/port.pid)" 2>/dev/null || true
+```
+
+```sh
+rm -rf ~/devops-lab/01-shell
+```
