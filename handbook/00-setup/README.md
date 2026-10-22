@@ -105,3 +105,5 @@ Keep the installed tools for the next steps. Remove only the notes made by this 
 ```sh
 rm -rf ~/devops-lab/00-setup
 ```
+
+After cleanup, the notes criterion will FAIL; that is expected because cleanup removes `notes.md`.
