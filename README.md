@@ -4,7 +4,7 @@ Small, reproducible labs for learning and demonstrating practical DevOps workflo
 
 ## Labs
 
-- [`handbook/`](handbook/) — the hands-on learning road: start with [`01-shell/`](handbook/01-shell/), then continue to [`02-docker/`](handbook/02-docker/); type every command, practise, break/fix, and run a read-only grader.
+- [`handbook/`](handbook/) — the hands-on learning road: start with [`00-setup/`](handbook/00-setup/), continue to [`01-shell/`](handbook/01-shell/), then [`02-docker/`](handbook/02-docker/); type every command, practise, break/fix, and run a read-only grader.
 - [`lab-template/`](lab-template/) — the reusable Docker Compose lab template.
 - [`example-static-page/`](example-static-page/) — a complete static-page example built from the template.
 - [`terraform-docker-lab/`](terraform-docker-lab/) — Terraform declares an nginx container, verifies its response, and proves destroy leaves nothing behind.

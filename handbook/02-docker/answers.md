@@ -17,7 +17,7 @@ docker network connect handbook-net handbook-web
 Grade from `handbook/02-docker`:
 
 ```sh
-sh ./check.sh
+./check.sh
 ```
 
 For comparison only, the existing repository lab still offers its automated answer-key lifecycle with `make up`, `make verify`, and `make down`; do not use that lifecycle for this handbook step.

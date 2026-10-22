@@ -15,5 +15,5 @@ docker run --rm hello-world
 Then grade again from `handbook/00-setup`:
 
 ```sh
-sh ./check.sh
+./check.sh
 ```
