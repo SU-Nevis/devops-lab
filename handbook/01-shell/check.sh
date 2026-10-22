@@ -15,5 +15,5 @@ if [ "$(cat "$lab/stdout.txt" 2>/dev/null)" = 'out: visible' ]; then pass 'redir
 if [ "$(cat "$lab/stderr.txt" 2>/dev/null)" = 'err: visible' ]; then pass 'redirect.stderr' 'stderr.txt contains only stderr'; else fail 'redirect.stderr' 'capture err: visible in stderr.txt' "sed -n '1,5p' '$lab/stderr.txt'"; fi
 if [ -s "$lab/notes.md" ]; then pass 'notes.written' 'notes.md exists and is not empty'; else fail 'notes.written' 'write three lines in ~/devops-lab/01-shell/notes.md' "ls -l '$lab/notes.md'"; fi
 printf '\nResult: %s passed, %s failed\n' "$((total - failures))" "$failures"
-printf 'Next: fix the first FAIL, then run ./check.sh again.\n'
+if [ "$failures" -gt 0 ]; then printf 'Next: fix the first FAIL, then run ./check.sh again.\n'; else printf 'Done: continue to 02-docker.\n'; fi
 [ "$failures" -eq 0 ]
