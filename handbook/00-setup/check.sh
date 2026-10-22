@@ -15,5 +15,5 @@ if docker image inspect hello-world:latest >/dev/null 2>&1; then pass 'docker.he
 notes=${HOME:?HOME is not set}/devops-lab/00-setup/notes.md
 if [ -s "$notes" ]; then pass 'notes.written' 'notes.md exists and is not empty'; else fail 'notes.written' 'write three lines in ~/devops-lab/00-setup/notes.md' "ls -l '$notes'"; fi
 printf '\nResult: %s passed, %s failed\n' "$((total - failures))" "$failures"
-printf 'Next: fix the first FAIL, then run ./check.sh again.\n'
+if [ "$failures" -gt 0 ]; then printf 'Next: fix the first FAIL, then run ./check.sh again.\n'; else printf 'Done: continue to 01-shell.\n'; fi
 [ "$failures" -eq 0 ]
