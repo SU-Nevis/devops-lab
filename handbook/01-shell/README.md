@@ -222,3 +222,5 @@ test ! -f ~/devops-lab/01-shell/port.pid || kill "$(cat ~/devops-lab/01-shell/po
 ```sh
 rm -rf ~/devops-lab/01-shell
 ```
+
+After cleanup, the notes criterion will FAIL; that is expected because cleanup removes `notes.md`.
